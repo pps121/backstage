@@ -14,9 +14,24 @@
  * limitations under the License.
  */
 
-import { Location } from '../catalog';
-import { ComponentDescriptor } from '../descriptors';
+import { ComponentDescriptorV1 } from './model/ComponentDescriptorV1';
 
-export type LocationReader = (
-  location: Location,
-) => Promise<ComponentDescriptor[]>;
+export type ComponentDescriptor = ComponentDescriptorV1;
+
+export type DescriptorEnvelope = {
+  apiVersion: string;
+  kind: string;
+  metadata?: object;
+  spec?: object;
+};
+
+export type DescriptorParser = {
+  apiVersion: string;
+  kind: string;
+  parse(envelope: DescriptorEnvelope): Promise<ParserOutput>;
+};
+
+export type ParserOutput = {
+  errors: Error[];
+  components: ComponentDescriptor[];
+};

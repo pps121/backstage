@@ -15,21 +15,24 @@
  */
 
 import fs from 'fs-extra';
-import { ComponentDescriptor, parseDescriptor } from '../descriptors';
+import { parseDescriptorYaml, ParserOutput } from '../../descriptors';
+import { LocationReader } from './types';
 
-export async function readFileLocation(
-  target: string,
-): Promise<ComponentDescriptor[]> {
-  let rawYaml;
-  try {
-    rawYaml = await fs.readFile(target, 'utf8');
-  } catch (e) {
-    throw new Error(`Unable to read "${target}", ${e}`);
-  }
+export class FileLocationReader implements LocationReader {
+  public type = 'file';
 
-  try {
-    return parseDescriptor(rawYaml);
-  } catch (e) {
-    throw new Error(`Malformed descriptor at "${target}", ${e}`);
+  async read(target: string): Promise<ParserOutput> {
+    let rawYaml;
+    try {
+      rawYaml = await fs.readFile(target, 'utf8');
+    } catch (e) {
+      throw new Error(`Unable to read "${target}", ${e}`);
+    }
+
+    try {
+      return await parseDescriptorYaml(rawYaml);
+    } catch (e) {
+      throw new Error(`Malformed descriptor at "${target}", ${e}`);
+    }
   }
 }

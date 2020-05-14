@@ -15,9 +15,9 @@
  */
 
 import * as yup from 'yup';
-import { DescriptorEnvelope } from './envelope';
+import { DescriptorEnvelope, DescriptorParser, ParserOutput } from '../types';
 
-export type ComponentDescriptor = {
+export type ComponentDescriptorV1 = {
   metadata: {
     name: string;
   };
@@ -26,11 +26,7 @@ export type ComponentDescriptor = {
   };
 };
 
-const componentDescriptorSchema: yup.Schema<ComponentDescriptor> = yup.object({
-  kind: yup
-    .string()
-    .required()
-    .matches(/^Component$/),
+const schema: yup.Schema<ComponentDescriptorV1> = yup.object({
   metadata: yup.object({
     name: yup.string().required(),
   }),
@@ -39,17 +35,21 @@ const componentDescriptorSchema: yup.Schema<ComponentDescriptor> = yup.object({
   }),
 });
 
-export async function parseComponentDescriptor(
-  envelope: DescriptorEnvelope,
-): Promise<ComponentDescriptor[]> {
-  let componentDescriptor;
-  try {
-    componentDescriptor = await componentDescriptorSchema.validate(envelope, {
-      strict: true,
-    });
-  } catch (e) {
-    throw new Error(`Malformed component, ${e}`);
-  }
+export class ComponentDescriptorV1Parser implements DescriptorParser {
+  public apiVersion = 'catalog.backstage.io/v1';
+  public kind = 'Component';
 
-  return [componentDescriptor];
+  async parse(envelope: DescriptorEnvelope): Promise<ParserOutput> {
+    let component;
+    try {
+      component = await schema.validate(envelope, { strict: true });
+    } catch (e) {
+      throw new Error(`Malformed component, ${e}`);
+    }
+
+    return {
+      errors: [],
+      components: [component],
+    };
+  }
 }

@@ -50,11 +50,14 @@ describe('CatalogLogic', () => {
         ]),
       } as unknown) as Catalog;
 
-      const locationReader = jest.fn().mockResolvedValue([
-        {
-          name: 'c1',
-        },
-      ]);
+      const locationReader = jest.fn().mockResolvedValue({
+        errors: [],
+        components: [
+          {
+            name: 'c1',
+          },
+        ],
+      });
 
       await expect(
         CatalogLogic.refreshLocations(catalog, locationReader, logger),

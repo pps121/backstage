@@ -14,17 +14,5 @@
  * limitations under the License.
  */
 
-import { Location } from '../catalog/types';
-import { ComponentDescriptor } from '../descriptors';
-import { readFileLocation } from './fileLocation';
-
-export async function readLocation(
-  location: Location,
-): Promise<ComponentDescriptor[]> {
-  switch (location.type) {
-    case 'file':
-      return await readFileLocation(location.target);
-    default:
-      throw new Error(`Unknown type "${location.type}"`);
-  }
-}
+export * from './FileLocationReader';
+export * from './types';

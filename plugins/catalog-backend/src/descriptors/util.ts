@@ -14,13 +14,29 @@
  * limitations under the License.
  */
 
-import { ComponentDescriptor, parseComponentDescriptor } from './component';
-import { parseDescriptorEnvelope } from './envelope';
+import { ParserOutput } from './types';
 
-// TODO(freben): Temporary helper that ignores the kind
-export async function parseDescriptor(
-  rawYaml: string,
-): Promise<ComponentDescriptor[]> {
-  const env = await parseDescriptorEnvelope(rawYaml);
-  return await parseComponentDescriptor(env);
+/**
+ * Helper to find completely errored out files.
+ *
+ * All fields are expected to be arrays so we can safely go through the entries
+ * like this instead of enumerating them manually (which risks missing some in
+ * the future).
+ *
+ * @param output The output of a parser run
+ */
+export function parserOutputOnlyContainsErrors(output: ParserOutput) {
+  if (output.errors.length === 0) {
+    return false;
+  }
+
+  for (const [key, value] of Object.entries(output)) {
+    if (key !== 'errors') {
+      if (value.length > 0) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

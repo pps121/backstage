@@ -15,13 +15,14 @@
  */
 
 import { Logger } from 'winston';
-import { LocationReader } from '../ingestion/types';
+import { parserOutputOnlyContainsErrors } from '../descriptors';
+import { readLocation } from '../ingestion';
 import { Catalog } from './types';
 
 export class CatalogLogic {
   public static startRefreshLoop(
     catalog: Catalog,
-    reader: LocationReader,
+    reader: typeof readLocation,
     logger: Logger,
   ): () => void {
     let cancel: () => void;
@@ -49,15 +50,23 @@ export class CatalogLogic {
 
   public static async refreshLocations(
     catalog: Catalog,
-    reader: LocationReader,
+    reader: typeof readLocation,
     logger: Logger,
   ): Promise<void> {
     const locations = await catalog.locations();
     for (const location of locations) {
       try {
         logger.debug(`Attempting refresh of location: ${location.id}`);
-        const componentDescriptors = await reader(location);
-        for (const componentDescriptor of componentDescriptors) {
+        const output = await reader(location);
+
+        for (const error of output.errors) {
+          logger.debug(error);
+        }
+        if (parserOutputOnlyContainsErrors(output)) {
+          throw new Error('No valid data found');
+        }
+
+        for (const componentDescriptor of output.components) {
           await catalog.addOrUpdateComponent(location.id, componentDescriptor);
         }
       } catch (e) {

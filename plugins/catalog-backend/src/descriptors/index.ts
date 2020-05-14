@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export * from './component';
-export * from './envelope';
+export * from './parser';
+export { ComponentDescriptor, ParserOutput } from './types';
 export * from './util';

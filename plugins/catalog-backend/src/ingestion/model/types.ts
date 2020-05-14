@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-export * from './reader';
+import { ParserOutput } from '../../descriptors';
+
+export type LocationReader = {
+  type: string;
+  read(target: string): Promise<ParserOutput>;
+};
